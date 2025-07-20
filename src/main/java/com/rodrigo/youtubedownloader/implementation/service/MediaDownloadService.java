@@ -1,9 +1,11 @@
 package com.rodrigo.youtubedownloader.implementation.service;
 
+import com.rodrigo.youtubedownloader.common.enums.FormatType;
 import com.rodrigo.youtubedownloader.common.exception.custom.MediaNotFoundException;
 import com.rodrigo.youtubedownloader.common.exception.custom.MediaProcessingException;
 import com.rodrigo.youtubedownloader.common.utils.ExtractIdFromMedia;
 import com.rodrigo.youtubedownloader.contract.mediaDownload.request.MediaDownloadRequest;
+import com.rodrigo.youtubedownloader.implementation.format.FormatStrategy;
 import com.wonkglorg.ytdlp.YtDlpResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -24,6 +27,7 @@ import java.nio.file.Paths;
 public class MediaDownloadService {
     private final YtDlpDownloadService ytDlpDownloadService;
     private final ExtractIdFromMedia extractIdFromMedia;
+    private final Map<FormatType, FormatStrategy> discoveryFormat;
 
     public ResponseEntity<Resource> downloadMedia(MediaDownloadRequest payload){
         YtDlpResponse response = ytDlpDownloadService.download(payload.url(), payload.format());
@@ -38,33 +42,24 @@ public class MediaDownloadService {
             throw new MediaProcessingException("Could not extract video ID from download output");
         }
 
-        String[] extensions = {".mp4", ".webm", ".mkv", ".avi", ".mov"};
-        File file = null;
+        Path filePath = Paths.get(tempDir, videoId + "." + payload.format().name().toLowerCase());
+        File file = filePath.toFile();
 
-        for (String ext : extensions) {
-            Path filePath = Paths.get(tempDir, videoId + ext);
-            File candidate = filePath.toFile();
-            if (candidate.exists()) {
-                file = candidate;
-                break;
-            }
-        }
-
-        if (file == null || !file.exists()) {
+        if (!file.exists()) {
             log.warn("Downloaded file not found for video ID: {} in directory: {}", videoId, tempDir);
             throw new MediaNotFoundException("Downloaded file not found for video ID: " + videoId);
         }
 
         log.info("Serving file: {}", file.getAbsolutePath());
-
+        MediaType mediaType = discoveryFormat.get(payload.format()).getMediaType();
         Resource resource = new FileSystemResource(file);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
-        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        headers.add(HttpHeaders.CONTENT_TYPE, mediaType.toString());
 
         return ResponseEntity.ok()
                 .headers(headers)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(mediaType)
                 .body(resource);
     }
 }

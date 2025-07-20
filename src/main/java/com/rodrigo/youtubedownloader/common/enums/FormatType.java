@@ -1,5 +1,5 @@
 package com.rodrigo.youtubedownloader.common.enums;
 
 public enum FormatType {
-    MP4, MP3
+    mp4, mp3
 }

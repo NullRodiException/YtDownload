@@ -18,7 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class YtDlpDownloadService {
 
-    public Map<FormatType, FormatStrategy> discoveryFormat;
+    private final Map<FormatType, FormatStrategy> discoveryFormat;
 
     public YtDlpResponse download(String url, FormatType format) {
         try {
