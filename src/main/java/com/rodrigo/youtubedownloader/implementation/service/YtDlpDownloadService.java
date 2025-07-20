@@ -27,6 +27,7 @@ public class YtDlpDownloadService {
             request.setOption("ignore-errors");
             request.setOption("output", "%(id)s.%(ext)s"); // id.mp4
             request.setOption("retries", 10);
+            request.setOption("no-playlist");
 
             log.info("Executing yt-dlp request: {}", request);
             return YtDlp.execute(request);
