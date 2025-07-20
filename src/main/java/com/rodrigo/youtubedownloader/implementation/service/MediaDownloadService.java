@@ -26,12 +26,13 @@ public class MediaDownloadService {
     private final ExtractIdFromMedia extractIdFromMedia;
 
     public ResponseEntity<Resource> downloadMedia(MediaDownloadRequest payload){
-        YtDlpResponse response = ytDlpDownloadService.download(payload.url());
+        YtDlpResponse response = ytDlpDownloadService.download(payload.url(), payload.format());
         log.debug("YtDlp response: {}", response.getOut());
 
         String tempDir = System.getProperty("java.io.tmpdir");
 
         String videoId = extractIdFromMedia.output(response.getOut());
+        log.info("Video ID extracted from yt-dlp output: {}", videoId);
         if (videoId == null) {
             log.error("Could not extract video ID from yt-dlp output");
             throw new MediaProcessingException("Could not extract video ID from download output");

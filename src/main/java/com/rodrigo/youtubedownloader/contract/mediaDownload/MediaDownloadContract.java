@@ -17,6 +17,7 @@ public class MediaDownloadContract {
 
     private final MediaDownloadService mediaDownloadService;
 
+    //TODO: colocar o YtDLP nas Resources do Spring
     @PostMapping
     public ResponseEntity<Resource> downloadMedia(@RequestBody MediaDownloadRequest payload){
         return mediaDownloadService.downloadMedia(payload);
