@@ -15,10 +15,7 @@ public class MP4FormatStrategy implements FormatStrategy {
     @Override
     public YtDlpRequest createRequest(String url, String tempDir) {
         YtDlpRequest request = new YtDlpRequest(url, tempDir);
-        request.setOption("ignore-errors");
-        request.setOption("output", "%(id)s.%(ext)s"); // id.mp4
         request.setOption("format", "b[ext=mp4]/b");
-        request.setOption("retries", 10);
 
         return request;
     }

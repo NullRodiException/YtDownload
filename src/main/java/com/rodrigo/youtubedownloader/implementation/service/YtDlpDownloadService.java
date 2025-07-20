@@ -24,6 +24,10 @@ public class YtDlpDownloadService {
         try {
             String tempDir = System.getProperty("java.io.tmpdir");
             YtDlpRequest request = discoveryFormat.get(format).createRequest(url, tempDir);
+            request.setOption("ignore-errors");
+            request.setOption("output", "%(id)s.%(ext)s"); // id.mp4
+            request.setOption("retries", 10);
+
             log.info("Executing yt-dlp request: {}", request);
             return YtDlp.execute(request);
         } catch (YtDlpException e) {
